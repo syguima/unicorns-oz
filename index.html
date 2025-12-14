@@ -93,8 +93,8 @@
                 <p class="text-white text-lg font-medium tracking-wide drop-shadow-md mt-4 opacity-90">A magia espera por você.</p>
             </div>
             
-            <!-- ADJUSTED MARGIN: increased bottom spacing to push button higher -->
-            <div class="flex flex-col items-center w-full space-y-8 mb-24 md:mb-12">
+            <!-- ADJUSTED MARGIN: increased bottom spacing to mb-32 (approx 8rem/128px) -->
+            <div class="flex flex-col items-center w-full space-y-8 mb-32 md:mb-12">
                 <button onclick="router.navigateTo('selection')" class="group relative w-full max-w-sm transition-transform active:scale-95 duration-200 cursor-pointer">
                     <div class="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-yellow-200 rounded-full blur opacity-40 group-hover:opacity-75 animate-pulse"></div>
                     <div class="relative w-full rounded-full border-2 border-yellow-300 bg-gradient-to-b from-emerald-500 to-emerald-800 shadow-button-depth py-5 px-8 flex items-center justify-center">
@@ -567,19 +567,7 @@
                 if (target) {
                     target.classList.remove('hidden');
                     if (viewId === 'welcome') {
-                        const bg = document.getElementById('welcome-bg-img');
-                        if (bg) {
-                             // RESPONSIVE IMAGE LOGIC
-                             const isPortrait = window.matchMedia("(orientation: portrait)").matches;
-                             let url = dataManager.settings.welcomeBackgroundUrl || "assets/welcome/background.jpg";
-                             
-                             if (isPortrait && dataManager.settings.welcomeBackgroundUrlMobile) {
-                                 url = dataManager.settings.welcomeBackgroundUrlMobile;
-                             } else if (!isPortrait && dataManager.settings.welcomeBackgroundUrlDesktop) {
-                                 url = dataManager.settings.welcomeBackgroundUrlDesktop;
-                             }
-                             bg.src = url;
-                        }
+                        this.updateWelcomeBackground();
                     } else if (viewId === 'selection') {
                         renderCharacterGrid();
                     } else if (viewId === 'story' && payload) {
@@ -589,9 +577,32 @@
                     }
                 }
             },
+            updateWelcomeBackground: function() {
+                 const bg = document.getElementById('welcome-bg-img');
+                 if (bg) {
+                     // RESPONSIVE IMAGE LOGIC
+                     const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+                     let url = dataManager.settings.welcomeBackgroundUrl || "assets/welcome/background.jpg";
+                     
+                     if (isPortrait && dataManager.settings.welcomeBackgroundUrlMobile) {
+                         url = dataManager.settings.welcomeBackgroundUrlMobile;
+                     } else if (!isPortrait && dataManager.settings.welcomeBackgroundUrlDesktop) {
+                         url = dataManager.settings.welcomeBackgroundUrlDesktop;
+                     }
+                     bg.src = url;
+                }
+            },
             init: function() {
                 dataManager.load();
                 audioManager.init();
+                
+                // Add resize listener to update background dynamically
+                window.addEventListener('resize', () => {
+                   if (this.currentView === 'welcome') {
+                       this.updateWelcomeBackground();
+                   }
+                });
+
                 const params = new URLSearchParams(window.location.search);
                 if (params.get('mode') === 'creator') this.navigateTo('creator');
                 else this.navigateTo('welcome');
