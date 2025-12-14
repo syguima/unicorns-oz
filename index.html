@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unicórnios & Oz</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#059669", 
+              "primary-light": "#34D399", 
+              "primary-dark": "#064E3B", 
+              gold: "#FCD34D", 
+              "gold-dark": "#D97706", 
+              "background-light": "#F0FDF4",
+              "background-dark": "#022C22",
+            },
+            fontFamily: {
+              display: ["'Cinzel Decorative'", "cursive"],
+              body: ["'Nunito'", "sans-serif"],
+            },
+            boxShadow: {
+                'glow': '0 0 15px rgba(252, 211, 77, 0.5)',
+                'button-depth': '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+            },
+            animation: {
+              'fade-in': 'fadeIn 1s ease-out',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              }
+            }
+          },
+        },
+      };
+    </script>
+    <style>
+      .scrollbar-hide::-webkit-scrollbar { display: none; }
+      .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      
+      /* Custom Scrollbar for Story Text */
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: rgba(5, 150, 105, 0.1); }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(252, 211, 77, 0.5); border-radius: 3px; }
+      
+      .perspective { perspective: 1000px; }
+      .text-shadow { text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+      
+      /* Utility to hide views */
+      .hidden { display: none !important; }
+    </style>
+    <!-- Load External Data -->
+    <script src="story-data.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+</head>
+<body class="bg-background-dark text-white font-body overflow-hidden h-screen w-screen">
+
+    <!-- ======================= VIEWS ======================= -->
+
+    <!-- 1. WELCOME SCREEN -->
+    <div id="view-welcome" class="view hidden relative w-full h-full flex flex-col">
+        <div class="absolute inset-0 z-0">
+            <!-- Updated to use local asset -->
+            <img id="welcome-bg-img" src="assets/welcome/background.jpg" class="w-full h-full object-cover brightness-75" onerror="this.src='https://picsum.photos/seed/ozlandscape/1080/1920'">
+            <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-primary-dark/90"></div>
+        </div>
+        
+        <div class="relative z-10 flex flex-col justify-between h-full px-6 pb-12 pt-20">
+            <div class="flex flex-col items-center text-center space-y-2 mt-8 animate-fade-in">
+                <h2 class="text-2xl md:text-3xl font-display text-gold drop-shadow-md tracking-wide">Bem-vindo ao</h2>
+                <h1 class="text-5xl md:text-7xl font-display font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 via-yellow-400 to-yellow-600 drop-shadow-xl py-2 px-4">Unicórnios & Oz!</h1>
+                <p class="text-white text-lg font-medium tracking-wide drop-shadow-md mt-4 opacity-90">A magia espera por você.</p>
+            </div>
+            
+            <div class="flex flex-col items-center w-full space-y-8 mb-8">
+                <button onclick="router.navigateTo('selection')" class="group relative w-full max-w-sm transition-transform active:scale-95 duration-200 cursor-pointer">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-yellow-200 rounded-full blur opacity-40 group-hover:opacity-75 animate-pulse"></div>
+                    <div class="relative w-full rounded-full border-2 border-yellow-300 bg-gradient-to-b from-emerald-500 to-emerald-800 shadow-button-depth py-5 px-8 flex items-center justify-center">
+                        <span class="material-icons-round text-yellow-200 mr-3 animate-bounce">auto_awesome</span>
+                        <span class="text-white font-bold text-xl tracking-widest drop-shadow-md font-display uppercase">Iniciar Aventura</span>
+                        <span class="material-icons-round text-yellow-200 ml-3 animate-bounce">auto_awesome</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. SELECTION SCREEN -->
+    <div id="view-selection" class="view hidden relative w-full h-full flex flex-col bg-background-dark">
+        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 pointer-events-none"></div>
+        
+        <div class="relative z-10 pt-8 pb-4 px-6 flex items-center justify-between bg-emerald-900/50 backdrop-blur-sm border-b border-emerald-700/50">
+            <button onclick="router.navigateTo('welcome')" class="text-emerald-100 hover:text-gold transition-colors">
+                <span class="material-icons-round text-3xl">arrow_back</span>
+            </button>
+            <h2 class="text-2xl font-display text-gold tracking-widest text-shadow-sm">Escolha Seu Herói</h2>
+            <div class="w-8"></div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 scrollbar-hide">
+            <div id="character-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pb-20">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. STORY MODE SCREEN -->
+    <div id="view-story" class="view hidden relative w-full h-full flex flex-col bg-background-dark">
+        <!-- Dynamic Background -->
+        <div class="absolute inset-0 z-0">
+            <img id="story-bg-img" src="" class="w-full h-full object-cover opacity-20 blur-sm">
+            <div class="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/90 to-background-dark/60"></div>
+        </div>
+
+        <div class="relative z-20 px-6 pt-8 pb-2 flex items-center">
+            <button onclick="router.navigateTo('selection'); audioManager.stop();" class="flex items-center text-emerald-300 hover:text-gold transition-colors font-display font-bold tracking-widest">
+                <span class="material-icons-round mr-2">arrow_back_ios</span> Voltar aos Heróis
+            </button>
+        </div>
+
+        <!-- UPDATED CONTAINER: overflow-y-auto for mobile, overflow-hidden for desktop -->
+        <div class="relative z-10 flex-1 flex flex-col md:flex-row max-w-6xl mx-auto w-full p-6 gap-8 animate-fade-in overflow-y-auto md:overflow-hidden scrollbar-hide">
+            <!-- Left: Media & Audio -->
+            <div class="w-full md:w-1/3 flex-shrink-0 flex flex-col items-center">
+                <!-- Changed aspect-[3/4] to aspect-video (16:9) -->
+                <div class="relative w-full aspect-video rounded-3xl overflow-hidden shadow-2xl border-4 border-gold mb-6 group bg-black">
+                    <!-- Container for Video or Image -->
+                    <div id="story-media-container" class="w-full h-full"></div>
+                    
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
+                    <div class="absolute bottom-4 left-4 right-4 pointer-events-none">
+                        <p class="text-sm font-bold text-gold uppercase tracking-widest mb-1 opacity-90 text-shadow">O Traje</p>
+                        <p id="story-outfit" class="text-white font-body text-sm leading-tight drop-shadow-md"></p>
+                    </div>
+                </div>
+
+                <!-- Custom Audio Player UI -->
+                <div class="w-full bg-emerald-900/90 border border-emerald-500/30 rounded-xl p-4 shadow-lg backdrop-blur-md mb-8 md:mb-0">
+                    <div class="flex items-center gap-4">
+                        <button id="btn-play-pause" class="flex-shrink-0 w-12 h-12 rounded-full bg-gold hover:bg-yellow-300 text-emerald-900 shadow-md flex items-center justify-center transition-transform active:scale-95">
+                            <span class="material-icons-round text-3xl" id="icon-play-pause">play_arrow</span>
+                        </button>
+                        <div class="flex-grow flex flex-col justify-center space-y-1">
+                            <div class="flex justify-between text-xs font-bold text-emerald-100/60 uppercase tracking-widest">
+                                <span>História Narrada</span>
+                                <span id="audio-status">Pausado</span>
+                            </div>
+                            <div class="h-2 w-full bg-emerald-950 rounded-full overflow-hidden relative">
+                                <div id="audio-progress" class="h-full bg-gradient-to-r from-gold to-yellow-500 w-0 transition-all duration-200 ease-linear"></div>
+                            </div>
+                        </div>
+                        <div class="text-emerald-100/50"><span class="material-icons-round">volume_up</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Text -->
+            <div class="w-full md:w-2/3 flex flex-col md:h-full md:overflow-hidden">
+                <h1 id="story-title" class="text-4xl md:text-6xl font-display text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-200 to-gold drop-shadow-sm mb-2"></h1>
+                <div class="h-1 w-24 bg-gradient-to-r from-emerald-500 to-transparent mb-6 rounded-full"></div>
+                
+                <div class="bg-emerald-800/40 border-l-4 border-gold p-4 mb-8 rounded-r-lg backdrop-blur-sm flex-shrink-0">
+                    <h3 class="text-gold font-bold font-display tracking-wider mb-1">O Desafio</h3>
+                    <p id="story-arc" class="text-emerald-50 italic font-body"></p>
+                </div>
+
+                <div id="story-text" class="prose prose-invert prose-emerald max-w-none font-body text-lg leading-relaxed text-emerald-100/90 overflow-visible md:overflow-y-auto pr-2 custom-scrollbar pb-20 md:flex-1">
+                    <!-- Script injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. CREATOR DASHBOARD -->
+    <div id="view-creator" class="view hidden w-full h-full bg-gray-900 text-gray-100 font-body overflow-y-auto">
+        <div class="max-w-7xl mx-auto p-4 md:p-8 pb-20">
+            <!-- Header layout IMPROVED: Solid background, higher z-index, clear Save button -->
+            <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 border-b border-gray-700 pb-6 sticky top-0 bg-gray-900 z-[100] pt-4 gap-4 shadow-xl">
+                <div class="flex-shrink-0">
+                    <h1 class="text-2xl md:text-3xl font-display text-gold font-bold">Painel do Criador</h1>
+                    <div class="flex items-center gap-2 mt-1">
+                        <p class="text-gray-400 text-sm md:text-base">Gerencie seus recursos mágicos</p>
+                        <span id="auto-save-status" class="text-xs text-emerald-500 bg-emerald-900/30 px-2 py-0.5 rounded border border-emerald-800 hidden animate-pulse">Salvo no navegador</span>
+                    </div>
+                </div>
+                
+                <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
+                     <button onclick="dataManager.addCharacter()" class="px-4 py-2 rounded-lg font-bold transition-all bg-emerald-800 text-white hover:bg-emerald-700 border border-emerald-600 flex items-center gap-1 cursor-pointer text-sm shadow-sm whitespace-nowrap">
+                        <span class="material-icons-round text-sm">add_circle</span>
+                        Nova
+                    </button>
+                    
+                    <!-- RENAMED BUTTON for clarity -->
+                    <button onclick="dataManager.downloadData()" id="btn-save-creator" class="px-5 py-2.5 rounded-lg font-bold transition-all bg-gold text-gray-900 hover:bg-yellow-400 hover:scale-105 cursor-pointer shadow-lg flex items-center gap-2 text-sm whitespace-nowrap border-2 border-yellow-500">
+                        <span class="material-icons-round">save</span>
+                        SALVAR (Baixar story-data.js)
+                    </button>
+                    
+                    <button onclick="dataManager.openGithubUpload()" id="btn-github-upload" class="px-4 py-2 rounded-lg font-bold transition-all bg-gray-700 text-white hover:bg-gray-600 border border-gray-500 cursor-pointer shadow-lg flex items-center gap-2 text-sm whitespace-nowrap" title="Ir para página de upload do GitHub">
+                        <span class="material-icons-round">cloud_upload</span>
+                        GitHub
+                    </button>
+
+                    <button onclick="router.navigateTo('welcome')" class="ml-2 text-emerald-400 hover:text-white text-xs font-bold uppercase tracking-widest whitespace-nowrap">Sair</button>
+                </div>
+            </header>
+            
+            <p id="asset-status" class="text-xs text-emerald-400 -mt-8 mb-8 font-mono opacity-80">
+                <span class="material-icons-round text-[10px] align-middle">info</span> 
+                Modo de Edição: Caminhos completos (C:\...) são visíveis aqui para teste, mas serão limpos (assets/...) automaticamente ao clicar em SALVAR.
+            </p>
+
+            <div id="creator-list" class="flex flex-col gap-8">
+                <!-- Generated Forms -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= LOGIC ======================= -->
+    <script>
+        // *** CONFIGURATION ***
+        const ASSET_LIBRARY = {
+            videos: [ "leo_walk.mp4", "finn_fly.mp4", "magic_sparkles.mp4" ],
+            audio: [ "leo.mp3", "finn.mp3", "jasper.mp3", "orion.mp3", "caleb.mp3", "elara.mp3", "mila.mp3", "zara.mp3", "ivy.mp3", "luna.mp3", "theme_music.mp3" ]
+        };
+
+        const DEFAULT_SETTINGS = {
+            welcomeBackgroundUrl: "assets/welcome/background.jpg",
+            githubRepoUrl: "" 
+        };
+
+        // --- MANAGERS ---
+
+        const dataManager = {
+            characters: [],
+            settings: {},
+            load: function() {
+                // 1. Try to load from the external file (story-data.js) loaded via <script>
+                if (window.STORY_DATA) {
+                    this.characters = window.STORY_DATA;
+                }
+                
+                if (window.APP_SETTINGS) {
+                    this.settings = window.APP_SETTINGS;
+                } else {
+                    this.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+                }
+
+                // 2. Fallback to LocalStorage
+                if ((!this.characters || this.characters.length === 0)) {
+                     const stored = localStorage.getItem('unicorns_oz_data');
+                     if (stored) {
+                        try {
+                            const parsed = JSON.parse(stored);
+                            if (parsed.characters) this.characters = parsed.characters;
+                            if (parsed.settings) this.settings = parsed.settings;
+                        } catch(e) {}
+                     }
+                }
+                
+                // 3. Absolute Fallback
+                if (!this.characters || this.characters.length === 0) {
+                     this.characters = []; 
+                }
+            },
+            save: function() {
+                const data = {
+                    characters: this.characters,
+                    settings: this.settings
+                };
+                localStorage.setItem('unicorns_oz_data', JSON.stringify(data));
+                
+                // Visual feedback for auto-save
+                const status = document.getElementById('auto-save-status');
+                if(status) {
+                    status.classList.remove('hidden');
+                    setTimeout(() => status.classList.add('hidden'), 2000);
+                }
+            },
+            update: function(id, field, value) {
+                const char = this.characters.find(c => c.id === id);
+                if (char) {
+                    char[field] = value;
+                    this.save();
+                }
+            },
+            updateSetting: function(field, value) {
+                this.settings[field] = value;
+                this.save();
+            },
+            addCharacter: function() {
+                const newChar = {
+                    id: 'custom-' + Date.now(),
+                    name: 'Nova História',
+                    gender: 'boy',
+                    outfit: '',
+                    description: '',
+                    imageUrl: 'assets/images/placeholder.png',
+                    videoUrl: '',
+                    audioUrl: '',
+                    storyArc: '',
+                    storyScript: '',
+                    isVisible: false
+                };
+                this.characters.unshift(newChar);
+                renderCreatorDashboard();
+                this.save();
+            },
+            downloadData: function() {
+                // 1. First, save the current state (with full C:/ paths) to local storage
+                this.save();
+                
+                // 2. Create a CLEAN COPY for the file download
+                // This ensures the file gets 'assets/...' but the UI keeps 'C:/...'
+                const cleanCharacters = this.characters.map(char => {
+                    return {
+                        ...char,
+                        imageUrl: cleanPathInput(char.imageUrl),
+                        videoUrl: cleanPathInput(char.videoUrl),
+                        audioUrl: cleanPathInput(char.audioUrl)
+                    };
+                });
+                
+                const cleanSettings = {
+                    ...this.settings,
+                    welcomeBackgroundUrl: cleanPathInput(this.settings.welcomeBackgroundUrl)
+                };
+
+                const fileContent = `window.STORY_DATA = ${JSON.stringify(cleanCharacters, null, 2)};\n\nwindow.APP_SETTINGS = ${JSON.stringify(cleanSettings, null, 2)};`;
+                
+                const blob = new Blob([fileContent], { type: 'text/javascript' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'story-data.js';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                const btn = document.getElementById('btn-save-creator');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="material-icons-round">check_circle</span> Arquivo Gerado com Sucesso!';
+                btn.classList.add('bg-green-500', 'border-green-600', 'text-white');
+                btn.classList.remove('bg-gold', 'text-gray-900');
+                
+                // Optional: Alert to confirm what happened
+                // alert("Arquivo story-data.js gerado! Seus caminhos locais (C:\\...) foram convertidos automaticamente para caminhos web (assets/...) dentro do arquivo.");
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('bg-green-500', 'border-green-600', 'text-white');
+                    btn.classList.add('bg-gold', 'text-gray-900');
+                }, 3000);
+            },
+            openGithubUpload: function() {
+                let repoUrl = this.settings.githubRepoUrl;
+                if (!repoUrl) {
+                    alert("Por favor, cole o link do seu repositório GitHub na caixa 'Configurações' abaixo primeiro.");
+                    const input = document.querySelector('input[placeholder*="github.com"]');
+                    if (input) input.focus();
+                    return;
+                }
+                repoUrl = repoUrl.trim();
+                if (repoUrl.endsWith('.git')) repoUrl = repoUrl.slice(0, -4);
+                if (repoUrl.endsWith('/')) repoUrl = repoUrl.slice(0, -1);
+                const uploadUrl = `${repoUrl}/upload/main`;
+                window.open(uploadUrl, '_blank');
+            }
+        };
+
+        // --- HELPER FOR SMART PATH CLEANING ---
+        function cleanPathInput(path) {
+            if (!path) return '';
+            // 1. Replace backslashes with forward slashes
+            let cleaned = path.replace(/\\/g, '/');
+            // 2. Look for 'assets/' (case insensitive)
+            const index = cleaned.toLowerCase().indexOf('assets/');
+            if (index !== -1) {
+                // 3. Keep only from 'assets/' onwards
+                return cleaned.substring(index);
+            }
+            return cleaned;
+        }
+
+        const DashboardController = {
+            toggleVisibility: function(event, id) {
+                event.stopPropagation();
+                const checkbox = event.target;
+                const isChecked = checkbox.checked;
+                dataManager.update(id, 'isVisible', isChecked);
+                const card = document.getElementById(`char-card-${id}`);
+                const labelSpan = checkbox.closest('label') ? checkbox.closest('label').querySelector('span.ms-3') : null;
+                if (card) {
+                    if (isChecked) {
+                        card.classList.remove('bg-gray-800/50', 'border-gray-700/50', 'opacity-75', 'grayscale');
+                        card.classList.add('bg-gray-800', 'border-gray-700');
+                        if(labelSpan) labelSpan.innerText = 'Visível';
+                    } else {
+                        card.classList.remove('bg-gray-800', 'border-gray-700');
+                        card.classList.add('bg-gray-800/50', 'border-gray-700/50', 'opacity-75', 'grayscale');
+                        if(labelSpan) labelSpan.innerText = 'Oculto';
+                    }
+                }
+            },
+            updateField: function(event, id, field) {
+                let val = event.target.value;
+                // REMOVED AUTO-CLEANING HERE. 
+                // We keep the full path so the user can see it locally.
+                dataManager.update(id, field, val);
+            },
+            updateSetting: function(event, setting) {
+                let val = event.target.value;
+                // REMOVED AUTO-CLEANING HERE.
+                dataManager.updateSetting(setting, val);
+            },
+            applyPreset: function(select, inputId) {
+                if(select.value) {
+                    const input = select.previousElementSibling;
+                    if(input) {
+                        input.value = select.value;
+                        input.dispatchEvent(new Event('input'));
+                        const field = input.getAttribute('data-field');
+                        if(field) dataManager.update(inputId, field, select.value);
+                    }
+                    select.value = '';
+                }
+            }
+        };
+        window.DashboardController = DashboardController;
+
+        const audioManager = {
+            audio: new Audio(),
+            isPlaying: false,
+            interval: null,
+            init: function() {
+                const btn = document.getElementById('btn-play-pause');
+                if(btn) btn.onclick = () => this.toggle();
+                this.audio.onended = () => { this.isPlaying = false; this.updateUI(); };
+            },
+            load: function(url) {
+                this.stop();
+                if(url) this.audio.src = url;
+                else this.audio.src = "";
+            },
+            toggle: function() {
+                if (!this.audio.src) return;
+                if (this.isPlaying) this.audio.pause();
+                else this.audio.play();
+                this.isPlaying = !this.isPlaying;
+                this.updateUI();
+            },
+            stop: function() {
+                this.audio.pause();
+                this.audio.currentTime = 0;
+                this.isPlaying = false;
+                this.updateUI();
+            },
+            updateUI: function() {
+                const icon = document.getElementById('icon-play-pause');
+                const status = document.getElementById('audio-status');
+                const progress = document.getElementById('audio-progress');
+                if(!icon) return;
+                if (this.isPlaying) {
+                    icon.innerText = 'pause';
+                    status.innerText = 'Tocando...';
+                    if (this.interval) clearInterval(this.interval);
+                    this.interval = setInterval(() => {
+                        if (this.audio.duration) {
+                            const pct = (this.audio.currentTime / this.audio.duration) * 100;
+                            progress.style.width = pct + '%';
+                        }
+                    }, 100);
+                } else {
+                    icon.innerText = 'play_arrow';
+                    status.innerText = 'Pausado';
+                    if (this.interval) clearInterval(this.interval);
+                }
+            }
+        };
+
+        const router = {
+            currentView: '',
+            currentPayload: null,
+            navigateTo: function(viewId, payload) {
+                this.currentView = viewId;
+                this.currentPayload = payload;
+                document.querySelectorAll('.view').forEach(el => el.classList.add('hidden'));
+                const target = document.getElementById(`view-${viewId}`);
+                if (target) {
+                    target.classList.remove('hidden');
+                    if (viewId === 'welcome') {
+                        const bg = document.getElementById('welcome-bg-img');
+                        if (bg && dataManager.settings.welcomeBackgroundUrl) {
+                            bg.src = dataManager.settings.welcomeBackgroundUrl;
+                        }
+                    } else if (viewId === 'selection') {
+                        renderCharacterGrid();
+                    } else if (viewId === 'story' && payload) {
+                        renderStory(payload);
+                    } else if (viewId === 'creator') {
+                        renderCreatorDashboard();
+                    }
+                }
+            },
+            init: function() {
+                dataManager.load();
+                audioManager.init();
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('mode') === 'creator') this.navigateTo('creator');
+                else this.navigateTo('welcome');
+            }
+        };
+
+        // --- RENDER FUNCTIONS ---
+
+        function renderCharacterGrid() {
+            const grid = document.getElementById('character-grid');
+            grid.innerHTML = '';
+            const visibleChars = dataManager.characters.filter(char => char.isVisible !== false);
+            visibleChars.forEach(char => {
+                const card = document.createElement('div');
+                card.className = "group relative h-80 w-full cursor-pointer perspective";
+                card.onclick = () => router.navigateTo('story', char.id);
+                const genderClass = char.gender === 'boy' ? 'bg-blue-500/80 text-blue-50' : 'bg-pink-500/80 text-pink-50';
+                const genderLabel = char.gender === 'boy' ? 'Menino' : 'Menina';
+                card.innerHTML = `
+                    <div class="relative h-full w-full rounded-2xl overflow-hidden border-2 border-emerald-600 group-hover:border-gold transition-colors duration-300 shadow-lg group-hover:shadow-glow transform group-hover:-translate-y-2 bg-emerald-900">
+                        <img src="${char.imageUrl}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100" onerror="this.src='https://placehold.co/400x600?text=Sem+Imagem'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-4">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <span class="text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${genderClass}">${genderLabel}</span>
+                            </div>
+                            <h3 class="text-xl font-display text-white font-bold mb-1 group-hover:text-gold transition-colors">${char.name}</h3>
+                            <p class="text-emerald-100/80 text-sm font-body line-clamp-2">${char.description}</p>
+                        </div>
+                        <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderStory(charId) {
+            const char = dataManager.characters.find(c => c.id === charId);
+            if (!char) return;
+            document.getElementById('story-title').innerText = char.name;
+            document.getElementById('story-arc').innerText = char.storyArc;
+            document.getElementById('story-outfit').innerText = char.outfit;
+            const scriptHtml = char.storyScript.split('\n\n').map(p => `<p class="mb-4">${p}</p>`).join('');
+            document.getElementById('story-text').innerHTML = scriptHtml;
+            document.getElementById('story-bg-img').src = char.imageUrl;
+            const mediaContainer = document.getElementById('story-media-container');
+            mediaContainer.innerHTML = '';
+            const url = char.videoUrl && char.videoUrl.trim();
+            if (url) {
+                const isImage = /\.(jpg|jpeg|png|gif|webp)($|\?)/i.test(url);
+                if (isImage) {
+                     const img = document.createElement('img');
+                     img.src = url;
+                     img.className = "w-full h-full object-cover animate-fade-in";
+                     mediaContainer.appendChild(img);
+                } else {
+                    const vid = document.createElement('video');
+                    vid.src = url;
+                    vid.className = "w-full h-full object-cover";
+                    vid.autoplay = true; vid.loop = true; vid.muted = true; vid.playsInline = true;
+                    mediaContainer.appendChild(vid);
+                }
+            } else {
+                const img = document.createElement('img');
+                img.src = char.imageUrl;
+                img.className = "w-full h-full object-cover animate-fade-in";
+                mediaContainer.appendChild(img);
+            }
+            audioManager.load(char.audioUrl);
+        }
+
+        function renderCreatorDashboard() {
+            const list = document.getElementById('creator-list');
+            list.innerHTML = '';
+            const createPresetOptions = (files, type) => {
+                let options = '<option value="">📚 Biblioteca...</option>';
+                const basePath = type === 'audio' ? 'assets/audio/' : 'assets/video/';
+                files.forEach(filename => { options += `<option value="${basePath}${filename}">${filename}</option>`; });
+                return options;
+            };
+
+            // SETTINGS SECTION
+            const settingsSection = document.createElement('div');
+            settingsSection.className = "bg-emerald-900/50 rounded-xl p-6 border border-gold shadow-xl mb-4";
+            settingsSection.innerHTML = `
+                <h3 class="text-xl font-bold text-gold font-display mb-4 border-b border-emerald-700 pb-2">Configurações do Site</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-gray-400 uppercase">GitHub Repository URL</label>
+                        <input type="text" value="${dataManager.settings.githubRepoUrl || ''}" 
+                            oninput="DashboardController.updateSetting(event, 'githubRepoUrl')"
+                            class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm focus:border-gold focus:outline-none transition-colors text-white"
+                            placeholder="https://github.com/seu-usuario/seu-repo">
+                        <p class="text-[10px] text-gray-400">Cole aqui o link do seu projeto para ativar o botão de Upload rápido.</p>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-gray-400 uppercase">Imagem de Fundo (Boas-vindas)</label>
+                        <input type="text" value="${dataManager.settings.welcomeBackgroundUrl}" 
+                            oninput="DashboardController.updateSetting(event, 'welcomeBackgroundUrl')"
+                            class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm focus:border-gold focus:outline-none transition-colors text-white"
+                            placeholder="assets/welcome/...">
+                    </div>
+                </div>
+            `;
+            list.appendChild(settingsSection);
+
+            // CHARACTER LIST
+            dataManager.characters.forEach(char => {
+                const isVisible = char.isVisible !== false;
+                const item = document.createElement('div');
+                item.id = `char-card-${char.id}`;
+                item.className = `rounded-xl p-6 border shadow-xl transition-all duration-300 ${isVisible ? 'bg-gray-800 border-gray-700' : 'bg-gray-800/50 border-gray-700/50 opacity-75 grayscale'}`;
+                const audioPresets = createPresetOptions(ASSET_LIBRARY.audio, 'audio');
+                const videoPresets = createPresetOptions(ASSET_LIBRARY.videos, 'video');
+
+                item.innerHTML = `
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="w-full md:w-48 flex-shrink-0 space-y-4">
+                            <div class="aspect-video rounded-lg overflow-hidden bg-gray-900 border-2 border-gray-600 relative">
+                                <img src="${char.imageUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x600?text=Invalido'">
+                                <div class="absolute bottom-0 inset-x-0 bg-black/70 p-1 text-xs text-center text-white">${char.id}</div>
+                            </div>
+                            <div class="text-center">
+                                <span class="text-xs uppercase tracking-widest bg-gray-700 px-2 py-1 rounded text-gray-300 inline-block mb-2">${char.gender === 'boy' ? 'Menino' : 'Menina'}</span>
+                                <div class="flex justify-center mt-2">
+                                     <label class="inline-flex items-center cursor-pointer" onclick="event.stopPropagation()">
+                                        <input type="checkbox" class="sr-only peer" ${isVisible ? 'checked' : ''} onchange="DashboardController.toggleVisibility(event, '${char.id}')">
+                                        <div class="relative w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-500 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                        <span class="ms-3 text-sm font-medium text-gray-300 toggle-label">${isVisible ? 'Visível' : 'Oculto'}</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-grow space-y-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-500 uppercase">Nome / Título</label>
+                                <input type="text" value="${char.name}" oninput="DashboardController.updateField(event, '${char.id}', 'name')" class="text-xl font-bold text-emerald-400 font-display w-full bg-gray-900/50 border border-gray-700 rounded p-2 focus:border-emerald-500 focus:outline-none">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-500 uppercase">URL da Imagem de Capa</label>
+                                    <input type="text" value="${char.imageUrl}" oninput="DashboardController.updateField(event, '${char.id}', 'imageUrl')" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm focus:border-emerald-500 focus:outline-none transition-colors text-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-500 uppercase">Voz / Áudio</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" value="${char.audioUrl}" data-field="audioUrl" oninput="DashboardController.updateField(event, '${char.id}', 'audioUrl')" class="flex-grow bg-gray-900 border border-gray-600 rounded p-2 text-sm focus:border-emerald-500 focus:outline-none transition-colors text-white">
+                                        <select class="w-10 bg-gray-700 border border-gray-600 rounded text-white text-xs focus:outline-none hover:bg-gray-600 cursor-pointer text-center" onchange="DashboardController.applyPreset(this, '${char.id}')">${audioPresets}</select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-500 uppercase">Vídeo da História</label>
+                                <div class="flex gap-2">
+                                     <input type="text" value="${char.videoUrl || ''}" data-field="videoUrl" oninput="DashboardController.updateField(event, '${char.id}', 'videoUrl')" class="flex-grow bg-gray-900 border border-gray-600 rounded p-2 text-sm focus:border-emerald-500 focus:outline-none transition-colors text-white" placeholder="Opcional">
+                                     <select class="w-10 bg-gray-700 border border-gray-600 rounded text-white text-xs focus:outline-none hover:bg-gray-600 cursor-pointer text-center" onchange="DashboardController.applyPreset(this, '${char.id}')">${videoPresets}</select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-500 uppercase">Descrição Curta</label>
+                                    <textarea rows="2" oninput="DashboardController.updateField(event, '${char.id}', 'description')" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm focus:border-emerald-500 focus:outline-none transition-colors text-white resize-none">${char.description}</textarea>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-500 uppercase">Traje</label>
+                                    <input type="text" value="${char.outfit}" oninput="DashboardController.updateField(event, '${char.id}', 'outfit')" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm focus:border-emerald-500 focus:outline-none transition-colors text-white">
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-500 uppercase">Arco da História</label>
+                                <textarea rows="2" oninput="DashboardController.updateField(event, '${char.id}', 'storyArc')" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm focus:border-emerald-500 focus:outline-none transition-colors text-white resize-none">${char.storyArc}</textarea>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-500 uppercase">Roteiro Completo</label>
+                                <textarea rows="6" oninput="DashboardController.updateField(event, '${char.id}', 'storyScript')" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm focus:border-emerald-500 focus:outline-none transition-colors text-white custom-scrollbar">${char.storyScript}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        window.onload = () => { router.init(); };
+
+    </script>
+</body>
+</html>
