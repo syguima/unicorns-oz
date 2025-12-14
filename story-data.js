@@ -127,5 +127,8 @@ window.STORY_DATA = [
 ];
 
 window.APP_SETTINGS = {
-  "welcomeBackgroundUrl": "assets/welcome/welcome2.png"
+  "welcomeBackgroundUrl": "assets/welcome/welcome2.png",
+  "welcomeBackgroundUrlDesktop": "assets/welcome/welcome2.png",
+  "welcomeBackgroundUrlMobile": "assets/welcome/welcome34.png",
+  "githubRepoUrl": "https://github.com/syguima/unicorns-oz"
 };

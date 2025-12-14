@@ -93,7 +93,8 @@
                 <p class="text-white text-lg font-medium tracking-wide drop-shadow-md mt-4 opacity-90">A magia espera por você.</p>
             </div>
             
-            <div class="flex flex-col items-center w-full space-y-8 mb-8">
+            <!-- ADJUSTED MARGIN: increased bottom spacing to push button higher -->
+            <div class="flex flex-col items-center w-full space-y-8 mb-24 md:mb-12">
                 <button onclick="router.navigateTo('selection')" class="group relative w-full max-w-sm transition-transform active:scale-95 duration-200 cursor-pointer">
                     <div class="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-yellow-200 rounded-full blur opacity-40 group-hover:opacity-75 animate-pulse"></div>
                     <div class="relative w-full rounded-full border-2 border-yellow-300 bg-gradient-to-b from-emerald-500 to-emerald-800 shadow-button-depth py-5 px-8 flex items-center justify-center">
@@ -249,7 +250,9 @@
         };
 
         const DEFAULT_SETTINGS = {
-            welcomeBackgroundUrl: "assets/welcome/background.jpg",
+            welcomeBackgroundUrlDesktop: "",
+            welcomeBackgroundUrlMobile: "",
+            welcomeBackgroundUrl: "assets/welcome/welcome2.png",
             githubRepoUrl: "" 
         };
 
@@ -347,7 +350,9 @@
                 
                 const cleanSettings = {
                     ...this.settings,
-                    welcomeBackgroundUrl: cleanPathInput(this.settings.welcomeBackgroundUrl)
+                    welcomeBackgroundUrl: cleanPathInput(this.settings.welcomeBackgroundUrl),
+                    welcomeBackgroundUrlDesktop: cleanPathInput(this.settings.welcomeBackgroundUrlDesktop),
+                    welcomeBackgroundUrlMobile: cleanPathInput(this.settings.welcomeBackgroundUrlMobile)
                 };
 
                 const fileContent = `window.STORY_DATA = ${JSON.stringify(cleanCharacters, null, 2)};\n\nwindow.APP_SETTINGS = ${JSON.stringify(cleanSettings, null, 2)};`;
@@ -484,11 +489,23 @@
                     progressContainer.addEventListener('click', seek);
                 }
             },
-            load: function(url) {
+            loadAndPlay: function(url) {
                 this.stop();
                 if(url) {
                     this.audio.src = url;
                     this.audio.load();
+                    // AUTO PLAY FIX
+                    const playPromise = this.audio.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(_ => {
+                            this.isPlaying = true;
+                            this.updateUI();
+                        }).catch(error => {
+                            console.log("Auto-play prevented by browser. User interaction needed.");
+                            this.isPlaying = false;
+                            this.updateUI();
+                        });
+                    }
                 } else {
                     this.audio.src = "";
                 }
@@ -551,8 +568,17 @@
                     target.classList.remove('hidden');
                     if (viewId === 'welcome') {
                         const bg = document.getElementById('welcome-bg-img');
-                        if (bg && dataManager.settings.welcomeBackgroundUrl) {
-                            bg.src = dataManager.settings.welcomeBackgroundUrl;
+                        if (bg) {
+                             // RESPONSIVE IMAGE LOGIC
+                             const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+                             let url = dataManager.settings.welcomeBackgroundUrl || "assets/welcome/background.jpg";
+                             
+                             if (isPortrait && dataManager.settings.welcomeBackgroundUrlMobile) {
+                                 url = dataManager.settings.welcomeBackgroundUrlMobile;
+                             } else if (!isPortrait && dataManager.settings.welcomeBackgroundUrlDesktop) {
+                                 url = dataManager.settings.welcomeBackgroundUrlDesktop;
+                             }
+                             bg.src = url;
                         }
                     } else if (viewId === 'selection') {
                         renderCharacterGrid();
@@ -634,7 +660,8 @@
                 img.className = "w-full h-full object-cover animate-fade-in";
                 mediaContainer.appendChild(img);
             }
-            audioManager.load(char.audioUrl);
+            // Use loadAndPlay to attempt autoplay
+            audioManager.loadAndPlay(char.audioUrl);
         }
 
         function renderCreatorDashboard() {
@@ -652,21 +679,36 @@
             settingsSection.className = "bg-emerald-900/50 rounded-xl p-6 border border-gold shadow-xl mb-4";
             settingsSection.innerHTML = `
                 <h3 class="text-xl font-bold text-gold font-display mb-4 border-b border-emerald-700 pb-2">Configurações do Site</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div class="space-y-1">
                         <label class="text-xs font-bold text-gray-400 uppercase">GitHub Repository URL</label>
                         <input type="text" value="${dataManager.settings.githubRepoUrl || ''}" 
                             oninput="DashboardController.updateSetting(event, 'githubRepoUrl')"
                             class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm focus:border-gold focus:outline-none transition-colors text-white"
                             placeholder="https://github.com/seu-usuario/seu-repo">
-                        <p class="text-[10px] text-gray-400">Cole aqui o link do seu projeto para ativar o botão de Upload rápido.</p>
                     </div>
-                    <div class="space-y-1">
-                        <label class="text-xs font-bold text-gray-400 uppercase">Imagem de Fundo (Boas-vindas)</label>
+                     <div class="space-y-1">
+                        <label class="text-xs font-bold text-gray-400 uppercase">Fundo Padrão (Fallback)</label>
                         <input type="text" value="${dataManager.settings.welcomeBackgroundUrl}" 
                             oninput="DashboardController.updateSetting(event, 'welcomeBackgroundUrl')"
                             class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm focus:border-gold focus:outline-none transition-colors text-white"
                             placeholder="assets/welcome/...">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-gray-400 uppercase">Imagem Desktop (16:9 Landscape)</label>
+                        <input type="text" value="${dataManager.settings.welcomeBackgroundUrlDesktop || ''}" 
+                            oninput="DashboardController.updateSetting(event, 'welcomeBackgroundUrlDesktop')"
+                            class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm focus:border-gold focus:outline-none transition-colors text-white"
+                            placeholder="assets/welcome/welcome_desktop.png">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-gray-400 uppercase">Imagem Mobile (3:4 Portrait)</label>
+                        <input type="text" value="${dataManager.settings.welcomeBackgroundUrlMobile || ''}" 
+                            oninput="DashboardController.updateSetting(event, 'welcomeBackgroundUrlMobile')"
+                            class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm focus:border-gold focus:outline-none transition-colors text-white"
+                            placeholder="assets/welcome/welcome_mobile.png">
                     </div>
                 </div>
             `;
