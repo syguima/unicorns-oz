@@ -166,8 +166,11 @@
                                 <span>História Narrada</span>
                                 <span id="audio-status">Pausado</span>
                             </div>
-                            <div class="h-2 w-full bg-emerald-950 rounded-full overflow-hidden relative">
-                                <div id="audio-progress" class="h-full bg-gradient-to-r from-gold to-yellow-500 w-0 transition-all duration-200 ease-linear"></div>
+                            <!-- SEEKABLE PROGRESS BAR -->
+                            <div id="audio-progress-container" class="h-6 w-full flex items-center cursor-pointer group select-none">
+                                <div class="h-2 w-full bg-emerald-950 rounded-full overflow-hidden relative">
+                                    <div id="audio-progress" class="h-full bg-gradient-to-r from-gold to-yellow-500 w-0 transition-all duration-100 ease-linear"></div>
+                                </div>
                             </div>
                         </div>
                         <div class="text-emerald-100/50"><span class="material-icons-round">volume_up</span></div>
@@ -458,11 +461,37 @@
                 const btn = document.getElementById('btn-play-pause');
                 if(btn) btn.onclick = () => this.toggle();
                 this.audio.onended = () => { this.isPlaying = false; this.updateUI(); };
+                
+                // CLICK-TO-SEEK LOGIC
+                const progressContainer = document.getElementById('audio-progress-container');
+                if (progressContainer) {
+                    const seek = (e) => {
+                        const rect = progressContainer.getBoundingClientRect();
+                        // handle touch or mouse
+                        const clientX = e.touches ? e.touches[0].clientX : e.clientX; 
+                        const width = rect.width;
+                        const x = clientX - rect.left;
+                        
+                        // Calculate percentage (0 to 1)
+                        const pct = Math.max(0, Math.min(1, x / width));
+                        
+                        if (this.audio.duration && isFinite(this.audio.duration)) {
+                            this.audio.currentTime = pct * this.audio.duration;
+                            this.updateProgressBar(); // Immediate visual update
+                        }
+                    };
+                    
+                    progressContainer.addEventListener('click', seek);
+                }
             },
             load: function(url) {
                 this.stop();
-                if(url) this.audio.src = url;
-                else this.audio.src = "";
+                if(url) {
+                    this.audio.src = url;
+                    this.audio.load();
+                } else {
+                    this.audio.src = "";
+                }
             },
             toggle: function() {
                 if (!this.audio.src) return;
@@ -476,26 +505,36 @@
                 this.audio.currentTime = 0;
                 this.isPlaying = false;
                 this.updateUI();
+                this.updateProgressBar();
             },
             updateUI: function() {
                 const icon = document.getElementById('icon-play-pause');
                 const status = document.getElementById('audio-status');
-                const progress = document.getElementById('audio-progress');
+                
                 if(!icon) return;
+                
                 if (this.isPlaying) {
                     icon.innerText = 'pause';
                     status.innerText = 'Tocando...';
-                    if (this.interval) clearInterval(this.interval);
-                    this.interval = setInterval(() => {
-                        if (this.audio.duration) {
-                            const pct = (this.audio.currentTime / this.audio.duration) * 100;
-                            progress.style.width = pct + '%';
-                        }
-                    }, 100);
+                    if (!this.interval) {
+                         this.interval = setInterval(() => this.updateProgressBar(), 100);
+                    }
                 } else {
                     icon.innerText = 'play_arrow';
                     status.innerText = 'Pausado';
-                    if (this.interval) clearInterval(this.interval);
+                    if (this.interval) {
+                        clearInterval(this.interval);
+                        this.interval = null;
+                    }
+                }
+            },
+            updateProgressBar: function() {
+                const progress = document.getElementById('audio-progress');
+                if (progress && this.audio.duration && isFinite(this.audio.duration)) {
+                     const pct = (this.audio.currentTime / this.audio.duration) * 100;
+                     progress.style.width = pct + '%';
+                } else if (progress) {
+                    progress.style.width = '0%';
                 }
             }
         };
